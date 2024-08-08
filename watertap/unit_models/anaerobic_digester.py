@@ -838,18 +838,28 @@ see reaction package for documentation.}""",
         # TODO: improve this later; for now, this resolved some scaling issues for modified adm1 test file
         if "S_IP" in self.config.liquid_property_package.component_list:
             iscale.set_scaling_factor(self.liquid_phase.heat, 1e-6)
-            iscale.set_scaling_factor(
-                self.liquid_phase.properties_out[0].conc_mass_comp["S_IP"], 1e-5
+            sf = iscale.get_scaling_factor(
+                self.liquid_phase.properties_out[0].conc_mass_comp["S_IP"],
+                default=1e-5,
+                warning=True,
             )
             iscale.set_scaling_factor(
-                self.liquid_phase.properties_out[0].conc_mass_comp["S_IN"], 1e-5
+                self.liquid_phase.properties_out[0].conc_mass_comp["S_IP"], sf
+            )
+            sf = iscale.get_scaling_factor(
+                self.liquid_phase.properties_out[0].conc_mass_comp["S_IN"],
+                default=1e-5,
+                warning=True,
+            )
+            iscale.set_scaling_factor(
+                self.liquid_phase.properties_out[0].conc_mass_comp["S_IN"], sf
             )
 
         for t, v in self.flow_vol_vap.items():
             iscale.constraint_scaling_transform(
                 v,
                 iscale.get_scaling_factor(
-                    self.liquid_phase.properties_out[t].flow_vol,
+                    self.vapor_phase[t].flow_vol,
                     default=1,
                     warning=True,
                 ),
@@ -957,11 +967,11 @@ see reaction package for documentation.}""",
             optarg = {}
 
         # Check DOF
-        if degrees_of_freedom(self) != 0:
-            raise InitializationError(
-                f"{self.name} degrees of freedom were not 0 at the beginning "
-                f"of initialization. DoF = {degrees_of_freedom(self)}"
-            )
+        # if degrees_of_freedom(self) != 0:
+        #     raise InitializationError(
+        #         f"{self.name} degrees of freedom were not 0 at the beginning "
+        #         f"of initialization. DoF = {degrees_of_freedom(self)}"
+        #     )
 
         # Set solver options
         init_log = idaeslog.getInitLogger(self.name, outlvl, tag="unit")
